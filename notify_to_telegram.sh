@@ -39,60 +39,82 @@ function getFriendlyFileSize() {
     echo $size
 }
 
+function getHeader () {
+    CURRENT_STATUS=`echo "BEFORE=Started,AFTER=Finished" | sed "s/.*$DUPLICATI__EVENTNAME=\([^,]*\).*/\1/"`
+    echo "DUPLICATI BACKUP
+    ———————————————————————————
+    ◉ Task:      $DUPLICATI__backup_name
+    ◉ Operation: $DUPLICATI__OPERATIONNAME
+    ◉ Status:    $CURRENT_STATUS" | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
+function getResultLine () {
+    RESULT_ICON=`echo "Unknown=🟣,Success=🟢,Warning=🟡,Error=🔴,Fatal=🛑" | sed "s/.*$DUPLICATI__PARSED_RESULT=\([^,]*\).*/\1/"`
+    echo "${RESULT_ICON}`printf %*s 3`${MESSAGE}
+    ◉ Result:    $DUPLICATI__PARSED_RESULT
+    ———————————————————————————" | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
+function getResultFatal () {
+    eval `sed -n "s/^\(\w*\):\s*\([^\"]*\)$/\1=\"\2\"/p" $DUPLICATI__RESULTFILE`
+    echo "
+    ⦿ Error: $Failed
+    ⦿ Details: $Details
+    " | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
+function getOperationRestore () {
+    eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
+    echo "
+    FILES:       count     size
+    ⦿ Restored: `printf %*s 4 $RestoredFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfRestoredFiles)`
+    ⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Patched:  `printf %*s 4 $PatchedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ———————————————————————————
+    FOLDERS:
+    ⦿ Restored: `printf %*s 4 $RestoredFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    " | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
+function getOperationBackup () {
+    eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
+    echo "
+    FILES:       count     size
+    ⦿ Added:    `printf %*s 4 $AddedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfAddedFiles)`
+    ⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Changed:  `printf %*s 4 $ModifiedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfModifiedFiles)`
+    ⦿ Opened:   `printf %*s 4 $OpenedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfOpenedFiles)`
+    ⦿ Examined: `printf %*s 4 $ExaminedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfExaminedFiles)`
+    ———————————————————————————
+    FOLDERS:
+    ⦿ Added:    `printf %*s 4 $AddedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Changed:  `printf %*s 4 $ModifiedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    " | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
 if [ "$DUPLICATI__OPERATIONNAME" == "List" ]; then exit 0; fi
 
-CURRENT_STATUS=`echo "BEFORE=Started,AFTER=Finished" | sed "s/.*$DUPLICATI__EVENTNAME=\([^,]*\).*/\1/"`
-MESSAGE="  DUPLICATI BACKUP
-———————————————————————————
-◉ Task:      $DUPLICATI__backup_name
-◉ Operation: $DUPLICATI__OPERATIONNAME
-◉ Status:    $CURRENT_STATUS"
+MESSAGE=$(getHeader)
 
 if [ "$DUPLICATI__EVENTNAME" == "AFTER" ]; then
-RESULT_ICON=`echo "Unknown=🟣,Success=🟢,Warning=🟡,Error=🔴,Fatal=🛑" | sed "s/.*$DUPLICATI__PARSED_RESULT=\([^,]*\).*/\1/"`
-MESSAGE="$RESULT_ICON $MESSAGE
-◉ Result:    $DUPLICATI__PARSED_RESULT
-———————————————————————————"
-if [ "$DUPLICATI__OPERATIONNAME" == "Restore" ]; then
-eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
-MESSAGE+="
-FILES:       count     size
-⦿ Restored: `printf %*s 4 $RestoredFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfRestoredFiles)`
-⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
-⦿ Patched:  `printf %*s 4 $PatchedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
-———————————————————————————
-FOLDERS:
-⦿ Restored: `printf %*s 4 $RestoredFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-"
-elif [ "$DUPLICATI__PARSED_RESULT" == "Fatal" ]; then
-eval `sed -n "s/^\(\w*\):\s*\([^\"]*\)$/\1=\"\2\"/p" $DUPLICATI__RESULTFILE`
-MESSAGE+="
-⦿ Error: $Failed
-⦿ Details: $Details
-"
-else # Not Fatal, Not Restore
-eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
-MESSAGE+="
-FILES:       count     size
-⦿ Added:    `printf %*s 4 $AddedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfAddedFiles)`
-⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
-⦿ Changed:  `printf %*s 4 $ModifiedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfModifiedFiles)`
-⦿ Opened:   `printf %*s 4 $OpenedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfOpenedFiles)`
-⦿ Examined: `printf %*s 4 $ExaminedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfExaminedFiles)`
-———————————————————————————
-FOLDERS:
-⦿ Added:    `printf %*s 4 $AddedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-⦿ Changed:  `printf %*s 4 $ModifiedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-"
-fi
-
-else # Not AFTER
-    MESSAGE="   $MESSAGE"
+    cp $DUPLICATI__RESULTFILE /script/result.txt
+    MESSAGE=$(getResultLine)
+    if [ "$DUPLICATI__OPERATIONNAME" == "Restore" ]; then
+        MESSAGE+=$(getOperationRestore)
+    elif [ "$DUPLICATI__PARSED_RESULT" == "Fatal" ]; then
+        MESSAGE+=$(getResultFatal)
+    else
+        MESSAGE+=$(getOperationBackup)
+    fi
+else
+    MESSAGE="`printf %*s 5`${MESSAGE}"
 fi
 
 MESSAGE=\`${MESSAGE}\`
+
+
 curl -s $TELEGRAM_URL -d chat_id=$TELEGRAM_CHATID -d text="$MESSAGE" -d parse_mode="markdown" -k > /dev/null
 
 exit 0
