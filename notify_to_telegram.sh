@@ -33,9 +33,13 @@ function getFriendlyFileSize() {
         size=$(awk 'BEGIN {printf "%.1f",'$size'/1048576}')Mb
     elif [ $size -ge 1024 ]; then
         size=$(awk 'BEGIN {printf "%.1f",'$size'/1024}')Kb
+    else
+        size='-'
     fi
     echo $size
 }
+
+if [ "$DUPLICATI__OPERATIONNAME" == "List" ]; then exit 0; fi
 
 CURRENT_STATUS=`echo "BEFORE=Started,AFTER=Finished" | sed "s/.*$DUPLICATI__EVENTNAME=\([^,]*\).*/\1/"`
 MESSAGE="  DUPLICATI BACKUP
@@ -49,14 +53,25 @@ RESULT_ICON=`echo "Unknown=🟣,Success=🟢,Warning=🟡,Error=🔴,Fatal=🛑"
 MESSAGE="$RESULT_ICON $MESSAGE
 ◉ Result:    $DUPLICATI__PARSED_RESULT
 ———————————————————————————"
-
-if [ "$DUPLICATI__PARSED_RESULT" == "Fatal" ]; then
+if [ "$DUPLICATI__OPERATIONNAME" == "Restore" ]; then
+eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
+MESSAGE+="
+FILES:       count     size
+⦿ Restored: `printf %*s 4 $RestoredFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfRestoredFiles)`
+⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+⦿ Patched:  `printf %*s 4 $PatchedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+———————————————————————————
+FOLDERS:
+⦿ Restored: `printf %*s 4 $RestoredFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+"
+elif [ "$DUPLICATI__PARSED_RESULT" == "Fatal" ]; then
 eval `sed -n "s/^\(\w*\):\s*\([^\"]*\)$/\1=\"\2\"/p" $DUPLICATI__RESULTFILE`
 MESSAGE+="
 ⦿ Error: $Failed
 ⦿ Details: $Details
 "
-else # Not Fatal
+else # Not Fatal, Not Restore
 eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
 MESSAGE+="
 FILES:       count     size
