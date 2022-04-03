@@ -99,7 +99,6 @@ if [ "$DUPLICATI__OPERATIONNAME" == "List" ]; then exit 0; fi
 MESSAGE=$(getHeader)
 
 if [ "$DUPLICATI__EVENTNAME" == "AFTER" ]; then
-    cp $DUPLICATI__RESULTFILE /script/result.txt
     MESSAGE=$(getResultLine)
     if [ "$DUPLICATI__OPERATIONNAME" == "Restore" ]; then
         MESSAGE+=$(getOperationRestore)
