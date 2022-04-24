@@ -67,13 +67,13 @@ function getOperationRestore () {
     eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
     echo "
     FILES:       count     size
-    ⦿ Restored: `printf %*s 4 $RestoredFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfRestoredFiles)`
-    ⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
-    ⦿ Patched:  `printf %*s 4 $PatchedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Restored: `printf %*s 5 $RestoredFiles` `printf %*s 9 $(getFriendlyFileSize $SizeOfRestoredFiles)`
+    ⦿ Deleted:  `printf %*s 5 $DeletedFiles` `printf %*s 9 $(getFriendlyFileSize 0)`
+    ⦿ Patched:  `printf %*s 5 $PatchedFiles` `printf %*s 9 $(getFriendlyFileSize 0)`
     ———————————————————————————
     FOLDERS:
-    ⦿ Restored: `printf %*s 4 $RestoredFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-    ⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Restored: `printf %*s 5 $RestoredFolders` `printf %*s 9 $(getFriendlyFileSize 0)`
+    ⦿ Deleted:  `printf %*s 5 $DeletedFolders` `printf %*s 9 $(getFriendlyFileSize 0)`
     " | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
@@ -81,16 +81,16 @@ function getOperationBackup () {
     eval `sed -n "s/^\(\w*\):\s*\(\w*\)$/\1=\2/p" $DUPLICATI__RESULTFILE`
     echo "
     FILES:       count     size
-    ⦿ Added:    `printf %*s 4 $AddedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfAddedFiles)`
-    ⦿ Deleted:  `printf %*s 4 $DeletedFiles` `printf %*s 10 $(getFriendlyFileSize 0)`
-    ⦿ Changed:  `printf %*s 4 $ModifiedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfModifiedFiles)`
-    ⦿ Opened:   `printf %*s 4 $OpenedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfOpenedFiles)`
-    ⦿ Examined: `printf %*s 4 $ExaminedFiles` `printf %*s 10 $(getFriendlyFileSize $SizeOfExaminedFiles)`
+    ⦿ Added:    `printf %*s 5 $AddedFiles` `printf %*s 9 $(getFriendlyFileSize $SizeOfAddedFiles)`
+    ⦿ Deleted:  `printf %*s 5 $DeletedFiles` `printf %*s 9 $(getFriendlyFileSize 0)`
+    ⦿ Changed:  `printf %*s 5 $ModifiedFiles` `printf %*s 9 $(getFriendlyFileSize $SizeOfModifiedFiles)`
+    ⦿ Opened:   `printf %*s 5 $OpenedFiles` `printf %*s 9 $(getFriendlyFileSize $SizeOfOpenedFiles)`
+    ⦿ Examined: `printf %*s 5 $ExaminedFiles` `printf %*s 9 $(getFriendlyFileSize $SizeOfExaminedFiles)`
     ———————————————————————————
     FOLDERS:
-    ⦿ Added:    `printf %*s 4 $AddedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-    ⦿ Deleted:  `printf %*s 4 $DeletedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
-    ⦿ Changed:  `printf %*s 4 $ModifiedFolders` `printf %*s 10 $(getFriendlyFileSize 0)`
+    ⦿ Added:    `printf %*s 5 $AddedFolders` `printf %*s 9 $(getFriendlyFileSize 0)`
+    ⦿ Deleted:  `printf %*s 5 $DeletedFolders` `printf %*s 9 $(getFriendlyFileSize 0)`
+    ⦿ Changed:  `printf %*s 5 $ModifiedFolders` `printf %*s 9 $(getFriendlyFileSize 0)`
     " | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
